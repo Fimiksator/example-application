@@ -74,6 +74,7 @@ private:
 
 public:
     int initPin( const struct gpio_dt_spec*);
+	void registerInterrupt();
 };
 
 /**
@@ -173,9 +174,9 @@ void ReadClass::onWork()
  */
 int ReadClass::initPin( const struct gpio_dt_spec* pin)
 {
-	inputPin = pin;
-
 	int ret;
+
+	inputPin = pin;
 
 	if (!gpio_is_ready_dt( inputPin)) 
     {
@@ -188,12 +189,17 @@ int ReadClass::initPin( const struct gpio_dt_spec* pin)
 		return 0;
 	}
 
+	return 1;
+}
+
+void ReadClass::registerInterrupt( )
+{
     /* Configure the GPIO interrupt */
-    ret = gpio_pin_interrupt_configure_dt(inputPin, GPIO_INT_EDGE_BOTH); // Trigger on both edges
+    int ret = gpio_pin_interrupt_configure_dt(inputPin, GPIO_INT_EDGE_BOTH); // Trigger on both edges
     if (ret != 0)
 	{
         printk("Error %d: Failed to configure interrupt on pin %d\n", ret, inputPin->pin);
-        return 0;
+        return;
     }
 
     /* Initialize the callback structure */
@@ -206,9 +212,8 @@ int ReadClass::initPin( const struct gpio_dt_spec* pin)
 	k_work_init(&work, work_handler);
 
     printk("GPIO pin %d initialized with interrupt, debounce, and work\n", inputPin->pin);
-
-	return 1;
 }
+
 
 /**
  * @brief Initialize the output GPIO pin.
@@ -377,6 +382,7 @@ int main(void)
 		printk("failed...\n");
 		return 0;
 	}
+	readClass.registerInterrupt();
 
 	if ( !reactClass.initPin( &led1))
 	{
