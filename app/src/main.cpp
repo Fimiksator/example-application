@@ -20,6 +20,9 @@
 /*------------------- LOCAL FUNCTIONS PROTOTYPES ---------------------*/
 /*--------------------------------------------------------------------*/
 
+static void led_blink_3times_work_scheduler(struct k_work *work);
+static void led_on500ms_work_scheduler(struct k_work *work);
+static void listener_callback(const struct zbus_channel *chan);
 
 /*--------------------------------------------------------------------*/
 /*--------------------------- DEFINITIONS ----------------------------*/
@@ -312,6 +315,56 @@ void ReactClass::blink500ms( )
 /*---------------------------- FUNCTIONS -----------------------------*/
 /*--------------------------------------------------------------------*/
 
+/**
+ * @brief Listener callback for Zbus channel messages.
+ *
+ * This function is triggered whenever a new message is received on the subscribed Zbus channel.
+ * It retrieves the message, logs the value, and delegates the state processing to the ReactClass instance.
+ *
+ * @param chan Pointer to the Zbus channel structure containing the message.
+ */
+static void listener_callback(const struct zbus_channel *chan)
+{
+	bool *msg = (bool *)zbus_chan_const_msg(chan);
+
+	printk("callback... value %d\r\n", *msg);
+	reactClass.checkState( *msg);
+}
+
+/**
+ * @brief Scheduler for blinking the LED three times.
+ *
+ * This function is executed as part of a scheduled work item and calls the blink3times method
+ * in the ReactClass instance to perform the LED blinking operation.
+ *
+ * @param work Pointer to the work item structure.
+ */
+static void led_blink_3times_work_scheduler(struct k_work *work)
+{
+	reactClass.blink3times();
+}
+
+/**
+ * @brief Scheduler for turning the LED on for 500ms.
+ *
+ * This function is executed as part of a scheduled work item and calls the blink500ms method
+ * in the ReactClass instance to perform the LED operation.
+ *
+ * @param work Pointer to the work item structure.
+ */
+static void led_on500ms_work_scheduler(struct k_work *work)
+{
+	reactClass.blink500ms();
+}
+
+/**
+ * @brief Main function initializing the GPIO pins and setting up the application.
+ *
+ * Initializes the GPIO input and output pins using the ReadClass and ReactClass instances.
+ * If either initialization fails, it logs an error and terminates the program.
+ *
+ * @return 1 if successful, 0 otherwise.
+ */
 int main(void)
 {
 
