@@ -192,6 +192,15 @@ int ReadClass::initPin( const struct gpio_dt_spec* pin)
 	return 1;
 }
 
+/**
+ * @brief Register and configure interrupts for event handling.
+ *
+ * Sets up the necessary interrupt handlers for the associated GPIO pin
+ * or hardware resource, links the interrupt to its callback function, 
+ * and ensures the system is prepared to handle and process interrupt events. 
+ *
+ * @return none
+ */
 void ReadClass::registerInterrupt( )
 {
     /* Configure the GPIO interrupt */
