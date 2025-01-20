@@ -311,6 +311,11 @@ void ReactClass::blink500ms( )
 /*-------------------------- GLOBAL VARIABLES ------------------------*/
 /*--------------------------------------------------------------------*/
 
+ReadClass readClass;
+ReactClass reactClass;
+static const struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+static const struct gpio_dt_spec button0 = GPIO_DT_SPEC_GET(BUTTON0_NODE, gpios);
+
 /*--------------------------------------------------------------------*/
 /*---------------------------- FUNCTIONS -----------------------------*/
 /*--------------------------------------------------------------------*/
