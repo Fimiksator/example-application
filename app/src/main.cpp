@@ -372,7 +372,17 @@ static void led_on500ms_work_scheduler(struct k_work *work)
  */
 int main(void)
 {
+	if ( !readClass.initPin( &button0))
+	{
+		printk("failed...\n");
+		return 0;
+	}
 
+	if ( !reactClass.initPin( &led1))
+	{
+		printk("failed...\n");
+		return 0;
+	}
 
 	return 1;
 }
