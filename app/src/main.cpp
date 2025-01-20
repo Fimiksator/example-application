@@ -51,6 +51,21 @@ public:
 };
 
 /**
+ * @class ReactClass - Does some work on the change of the other pin
+ */
+class ReactClass {
+private:
+    const struct gpio_dt_spec *outputPin;
+	int blink_count;
+
+public:
+    int initPin( const struct gpio_dt_spec*);
+	void checkState( bool);
+	void blink3times();
+	void blink500ms();
+};
+
+/**
  * @brief GPIO callback handler triggered by pin state changes.
  *
  * This static function is called whenever the GPIO interrupt is triggered.
@@ -168,6 +183,104 @@ int ReadClass::initPin( const struct gpio_dt_spec* pin)
 
 	return 1;
 }
+
+/**
+ * @brief Initialize the output GPIO pin.
+ *
+ * Configures the output GPIO pin and ensures it is ready for use.
+ *
+ * @param pin Pointer to the GPIO descriptor structure.
+ * @return 1 if initialization is successful, 0 otherwise.
+ */
+int ReactClass::initPin( const struct gpio_dt_spec* pin)
+{
+	outputPin = pin;
+
+	int ret;
+
+	if (!gpio_is_ready_dt( outputPin)) 
+    {
+        return 0;
+	}
+
+	ret = gpio_pin_configure_dt( outputPin, GPIO_OUTPUT_ACTIVE);
+	if ( ret != 0)
+	{
+		return 0;
+	}
+	
+	return 1;
+}
+
+/**
+ * @brief Schedule work based on the GPIO state.
+ *
+ * Depending on the input state, schedules work to either blink the LED
+ * three times or keep it on for 500ms.
+ *
+ * @param state Boolean indicating the desired state (true for blinking, false for steady on).
+ */
+void ReactClass::checkState( bool state)
+{
+	if (state)
+	{
+	 	k_work_schedule(&led_blink_3times_work, K_MSEC(0));
+	}
+	else
+	{
+	 	k_work_schedule(&led_on500ms_work, K_MSEC(0));
+	}
+}
+
+/**
+ * @brief Blink the LED three times.
+ *
+ * Blinks the LED on and off three times with a delay between blinks.
+ * Reschedules work for subsequent blinks if required.
+ */
+void ReactClass::blink3times( )
+{
+	int ret;
+	// Check if GPIO device is ready
+	if (!gpio_is_ready_dt(outputPin))
+	{
+		return;
+	}
+
+	// Blink LED (ON)
+	gpio_pin_set_dt(outputPin, 1);
+	k_msleep(100);
+	// Blink LED (OFF)
+	gpio_pin_set_dt(outputPin, 0);
+	k_msleep(100);
+
+	blink_count++;
+
+	if (blink_count < 3)
+	{
+		// Reschedule the work to blink the LED again
+		k_work_reschedule(&led_blink_3times_work, K_NO_WAIT);
+	}
+	else
+	{
+		// After 3 blinks, stop blinking
+		printk("LED blinked 3 times.\n");
+		blink_count = 0;
+	}
+}
+
+/**
+ * @brief Turn the LED on for 500ms.
+ *
+ * Turns the LED on, keeps it on for 500ms, and then turns it off.
+ */
+void ReactClass::blink500ms( )
+{
+	gpio_pin_set_dt(outputPin, 1);  // Turn LED ON
+	k_msleep(500); // Keep it on for 500ms
+	gpio_pin_set_dt(outputPin, 0);  // Turn LED OFF
+}
+
 /*--------------------------------------------------------------------*/
 /*-------------------------- GLOBAL VARIABLES ------------------------*/
 /*--------------------------------------------------------------------*/
