@@ -25,6 +25,29 @@
 /*--------------------------- DEFINITIONS ----------------------------*/
 /*--------------------------------------------------------------------*/
 
+/* registers main to logging module */
+LOG_MODULE_REGISTER(main, CONFIG_APP_LOG_LEVEL);
+
+/* zbus channel definition */
+ZBUS_CHAN_DEFINE(gpio_state_chan,	/* Name */
+		 bool,                      /* Message type */
+		 NULL,                      /* Validator */
+		 NULL,                      /* User data */
+		 ZBUS_OBSERVERS(listener),  /* observers */
+		 0                          /* Initial value is 0 */
+);
+
+/* zbus listener definition */
+ZBUS_LISTENER_DEFINE(listener, listener_callback);
+
+/* k_work_delayable definition */
+K_WORK_DELAYABLE_DEFINE(led_blink_3times_work, led_blink_3times_work_scheduler);
+K_WORK_DELAYABLE_DEFINE(led_on500ms_work, led_on500ms_work_scheduler);
+
+/* The devicetree node identifier for the "led0" alias. */
+#define LED0_NODE 		DT_ALIAS(led0)
+#define BUTTON0_NODE 	DT_ALIAS(sw0)
+
 
 /*--------------------------------------------------------------------*/
 /*----------------------------- CLASSES ------------------------------*/
